@@ -255,6 +255,95 @@ def select_best_gloss(topk_results, context):
 
 def translate_with_groq(gloss):
 
+    gloss = gloss.strip()
+
+    if not gloss:
+        return ""
+
+    # ==========================
+    # SINGLE WORD -> SKIP LLM
+    # ==========================
+    words = gloss.split()
+
+    if len(words) == 1:
+
+        word = words[0]
+
+        return word.replace("_", " ").title()
+
+    api_key = os.getenv("GROQ_API_KEY")
+
+    if not api_key:
+        return "Missing GROQ_API_KEY"
+
+    url = "https://api.groq.com/openai/v1/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "llama-3.1-8b-instant",
+        "messages": [
+            {
+                "role": "system",
+                "content": """
+You are an ASL gloss to English translator.
+
+Rules:
+- Return ONLY the English translation.
+- Never explain the translation.
+- Never say:
+  'The ASL gloss for...'
+  'Translation:'
+  'English:'
+  'This means...'
+- If input is a sentence, produce one natural English sentence.
+- Output only the translated text.
+"""
+            },
+            {
+                "role": "user",
+                "content": gloss
+            }
+        ],
+        "temperature": 0.2,
+        "max_tokens": 100
+    }
+
+    try:
+
+        r = requests.post(
+            url,
+            headers=headers,
+            json=data
+        )
+
+        if r.status_code != 200:
+            return r.text
+
+        result = (
+            r.json()["choices"][0]["message"]["content"]
+            .strip()
+        )
+
+        bad_prefixes = [
+            "The ASL gloss for",
+            "Translation:",
+            "English:",
+            "This means"
+        ]
+
+        for prefix in bad_prefixes:
+
+            if result.startswith(prefix):
+                return gloss
+
+        return result
+
+    except Exception as e:
+        return str(e)
     api_key = os.getenv("GROQ_API_KEY")
 
     if not api_key:
@@ -361,7 +450,7 @@ def run_pipeline(video_path):
 
     if gloss_sentence.strip():
         english = translate_with_groq(
-            gloss_sentence.lower()
+            gloss_sentence
         )
 
     print("ENGLISH:", english)

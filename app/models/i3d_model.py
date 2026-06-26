@@ -6,7 +6,7 @@ class I3DModel:
         self.device = device
 
         self.model = InceptionI3d(400, in_channels=3)
-        self.model.replace_logits(300)
+        self.model.replace_logits(100)
         self.model.load_state_dict(torch.load(weights_path, map_location=device))
         self.model.to(device)
         self.model.eval()
