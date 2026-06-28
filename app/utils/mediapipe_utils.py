@@ -1,25 +1,19 @@
 import cv2
-import mediapipe as mp
-
-mp_hands = mp.solutions.hands
-
 hands = None
-
-HAND_LOWER_THRESHOLD = 0.85
-
 
 def get_hands():
     global hands
 
     if hands is None:
-        print("Loading MediaPipe Hands...")
-        hands = mp_hands.Hands(
+        import mediapipe as mp
+
+        print("Loading MediaPipe...")
+        hands = mp.solutions.hands.Hands(
             static_image_mode=False,
             max_num_hands=2
         )
 
     return hands
-
 
 def extract_hand_status(frame):
 

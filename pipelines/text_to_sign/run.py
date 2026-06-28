@@ -8,12 +8,19 @@ from .assets_loader import load_landmarks
 from .generator import generate_frames
 from .renderer import render
 
-# ================= LOAD DATA =================
-landmarks_dict = load_landmarks()
+landmarks_dict = None
+vocab_set = None
 
-# FIX: vocab set must come from LANDMARK KEYS (like notebook)
-vocab_set = set(landmarks_dict.keys())
 
+def get_vocab():
+    global landmarks_dict, vocab_set
+
+    if vocab_set is None:
+        print("Loading text-to-sign assets...")
+        landmarks_dict = load_landmarks()
+        vocab_set = set(landmarks_dict.keys())
+
+    return vocab_set
 
 def run_pipeline(user_sentence):
     print("INPUT:", user_sentence)
@@ -33,7 +40,9 @@ def run_pipeline(user_sentence):
     print("TOKENS:", tokens)
 
     # ================= STEP 4: MAPPING =================
-    mapped_sequence = [map_word(t, vocab_set) for t in tokens]
+    vocab = get_vocab()
+
+    mapped_sequence = [map_word(t, vocab) for t in tokens]
     print("MAPPED:", mapped_sequence)
 
     # ================= STEP 5: FRAME GEN =================
