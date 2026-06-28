@@ -2,54 +2,59 @@ from .language import (
     clean_gloss,
     map_word,
     lemmatize_words,
-    llm_text_to_gloss
+    llm_text_to_gloss,
 )
-from .assets_loader import load_landmarks
-from .generator import generate_frames
+
+from .generator import generate_frames, get_landmarks
 from .renderer import render
 
-landmarks_dict = None
+# ==========================
+# Lazy-loaded vocabulary
+# ==========================
+
 vocab_set = None
 
 
 def get_vocab():
-    global landmarks_dict, vocab_set
+    global vocab_set
 
     if vocab_set is None:
         print("Loading text-to-sign assets...")
-        landmarks_dict = load_landmarks()
-        vocab_set = set(landmarks_dict.keys())
+        vocab_set = set(get_landmarks().keys())
 
     return vocab_set
+
+
+# ==========================
+# Main Pipeline
+# ==========================
 
 def run_pipeline(user_sentence):
     print("INPUT:", user_sentence)
 
-    # ================= STEP 1: LLM → GLOSS =================
+    # STEP 1: Text → Gloss
     raw_gloss = llm_text_to_gloss(user_sentence)
-
     print("RAW GLOSS:", raw_gloss)
 
-    # ================= STEP 2: CLEAN =================
+    # STEP 2: Clean gloss
     cleaned = clean_gloss(raw_gloss)
     print("CLEANED:", cleaned)
 
-    # ================= STEP 3: TOKENIZE =================
+    # STEP 3: Tokenize + Lemmatize
     tokens = cleaned.split()
     tokens = lemmatize_words(tokens)
     print("TOKENS:", tokens)
 
-    # ================= STEP 4: MAPPING =================
+    # STEP 4: Map words to vocabulary
     vocab = get_vocab()
-
-    mapped_sequence = [map_word(t, vocab) for t in tokens]
+    mapped_sequence = [map_word(token, vocab) for token in tokens]
     print("MAPPED:", mapped_sequence)
 
-    # ================= STEP 5: FRAME GEN =================
+    # STEP 5: Generate landmark frames
     frames = generate_frames(mapped_sequence)
     print("FRAMES COUNT:", len(frames))
 
-    # ================= STEP 6: RENDER =================
+    # STEP 6: Render video
     video_path = render(frames)
     print("VIDEO PATH:", video_path)
 

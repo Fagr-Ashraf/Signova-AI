@@ -1,6 +1,6 @@
 import cv2
 hands = None
-
+HAND_LOWER_THRESHOLD = 0.85 
 def get_hands():
     global hands
 

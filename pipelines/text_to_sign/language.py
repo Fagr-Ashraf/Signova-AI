@@ -6,6 +6,13 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+
+try:
+    nltk.data.find("corpora/wordnet")
+except LookupError:
+    nltk.download("wordnet")
+    nltk.download("omw-1.4")
+
 lemmatizer = WordNetLemmatizer()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
