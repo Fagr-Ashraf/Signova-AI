@@ -16,9 +16,17 @@ MIN_PAUSE_FRAMES = 5
 MIN_SIGN_FRAMES = 10
 
 # ---------------- MODEL ----------------
-print("Loading I3D model...")
+i3d_model = None
 
-i3d_model = I3DModel(I3D_WEIGHTS, device)
+
+def get_i3d_model():
+    global i3d_model
+
+    if i3d_model is None:
+        print("Loading I3D model...")
+        i3d_model = I3DModel(I3D_WEIGHTS, device)
+
+    return i3d_model
 
 with open(CLASS_LIST, "r") as f:
     gloss_list = [line.strip().upper() for line in f.readlines()]
@@ -101,7 +109,8 @@ def predict_segment(segment_frames, topk=5):
         clip_tensor = torch.from_numpy(clip).unsqueeze(0).to(device)
 
         with torch.no_grad():
-            logits = i3d_model(clip_tensor)
+            model = get_i3d_model()
+            logits = model(clip_tensor)
             logits = torch.mean(logits, dim=2)
             probs = F.softmax(logits, dim=1)
 
