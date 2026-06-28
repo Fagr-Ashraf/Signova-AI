@@ -1,8 +1,17 @@
-import os
+from pathlib import Path
 
-JSON_PATH = "assets\\text_to_sign\\filtered_one_video_per_gloss.json"
-LANDMARKS_PATH = "assets\\text_to_sign\\wlasl2000_filtered_keypoints\\filtered_landmarks_V3\\filtered_landmarks_V3.npz"
+BASE_DIR = Path(__file__).resolve().parents[2]
 
+JSON_PATH = BASE_DIR / "assets" / "text_to_sign" / "filtered_one_video_per_gloss.json"
+
+LANDMARKS_PATH = (
+    BASE_DIR
+    / "assets"
+    / "text_to_sign"
+    / "wlasl2000_filtered_keypoints"
+    / "filtered_landmarks_V3"
+    / "filtered_landmarks_V3.npz"
+)
 FPS = 25
 WIDTH = 1280
 HEIGHT = 720
